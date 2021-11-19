@@ -98,15 +98,7 @@ class ItemList extends StatelessWidget with ChangeNotifier {
           child: CheckboxListTile(
               value: items.checked,
               title: Text(items.aktivitet),
-              secondary: IconButton(
-                icon: const Icon(Icons.delete_outline),
-                color: Colors.red[300],
-                tooltip: "Delete",
-                onPressed: () {
-                  Provider.of<ItemsProvider>(context, listen: false)
-                      .removeItem(index);
-                },
-              ),
+              secondary: deleteButton(context, index, items.aktivitet),
               controlAffinity: ListTileControlAffinity.leading,
               activeColor: Colors.green,
               onChanged: (newvalue) {
@@ -116,4 +108,33 @@ class ItemList extends StatelessWidget with ChangeNotifier {
               }));
     });
   }
+}
+
+Widget deleteButton(BuildContext context, index, String aktivitet) {
+  return IconButton(
+    icon: const Icon(Icons.delete_outline),
+    color: Colors.red[300],
+    tooltip: "Delete",
+    onPressed: () => showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Varning'),
+        content: Text("Är du säker på att du vill radera '$aktivitet'?"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Avbryt'),
+          ),
+          TextButton(
+            onPressed: () {
+              Provider.of<ItemsProvider>(context, listen: false)
+                  .removeItem(index);
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    ),
+  );
 }
