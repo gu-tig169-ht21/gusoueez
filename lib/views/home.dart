@@ -159,5 +159,5 @@ List<Items>? _filterList(List<Items> list, filterBy) {
   if (filterBy == 'inte markerad') {
     return list.where((item) => item.checked == false).toList();
   }
-  return null;
+  return list;
 }
