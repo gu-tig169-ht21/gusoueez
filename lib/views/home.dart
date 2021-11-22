@@ -6,26 +6,42 @@ import 'package:provider/provider.dart';
 
 class Home extends StatelessWidget {
   final _controller = TextEditingController();
+  bool checkAll = false;
   @override
   Widget build(BuildContext context) {
     return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
       return Scaffold(
           appBar: AppBar(
+            leading: Builder(builder: (BuildContext context) {
+              return Checkbox(
+                  value: checkAll,
+                  activeColor: Colors.green,
+                  onChanged: (newValue) {
+                    setState(() {
+                      checkAll = newValue!;
+                      Provider.of<ItemsProvider>(context, listen: false)
+                          .updateAll(newValue);
+                    });
+                  });
+            }),
             title: const Text('Att göra'),
             centerTitle: true,
             actions: <Widget>[
-              PopupMenuButton<bool>(
+              PopupMenuButton<String>(
                 onSelected: (value) {
                   setState(() {
                     Provider.of<ItemsProvider>(context, listen: false)
-                        .updateAll(value);
+                        .setFilterBy(value);
                   });
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(child: Text('Markera alla'), value: true),
+                  const PopupMenuItem(child: Text('Visa alla'), value: 'alla'),
                   const PopupMenuItem(
-                      child: Text('Avmarkera alla'), value: false)
+                      child: Text('Visa avklarade'), value: 'markerad'),
+                  const PopupMenuItem(
+                      child: Text('Visa inte avklarade'),
+                      value: 'inte markerad')
                 ],
               )
             ],
@@ -33,14 +49,12 @@ class Home extends StatelessWidget {
           body: SingleChildScrollView(
             child: Consumer<ItemsProvider>(
                 builder: (context, ItemsProvider data, child) {
-              return ListView.builder(
-                scrollDirection: Axis.vertical,
-                shrinkWrap: true,
-                itemCount: data.getAktiviteter.length,
-                itemBuilder: (context, index) {
-                  return ItemList(data.getAktiviteter[index], index);
-                },
-              );
+              return ListView(
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  children: _filterList(data.getAktiviteter, data.filterBy)!
+                      .map((card) => ListItem(context, card))
+                      .toList());
             }),
           ),
           floatingActionButton: FloatingActionButton(
@@ -83,34 +97,7 @@ class Home extends StatelessWidget {
   }
 }
 
-class ItemList extends StatelessWidget with ChangeNotifier {
-  final Items items;
-  int index;
-
-  ItemList(this.items, this.index);
-
-  @override
-  Widget build(BuildContext context) {
-    return StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
-      return Padding(
-          padding: const EdgeInsets.all(2),
-          child: CheckboxListTile(
-              value: items.checked,
-              title: Text(items.aktivitet),
-              secondary: deleteButton(context, index, items.aktivitet),
-              controlAffinity: ListTileControlAffinity.leading,
-              activeColor: Colors.green,
-              onChanged: (newvalue) {
-                setState(() {
-                  items.checked = newvalue!;
-                });
-              }));
-    });
-  }
-}
-
-Widget deleteButton(BuildContext context, index, String aktivitet) {
+Widget deleteButton(BuildContext context, item, String aktivitet) {
   return IconButton(
     icon: const Icon(Icons.delete_outline),
     color: Colors.red[300],
@@ -128,7 +115,7 @@ Widget deleteButton(BuildContext context, index, String aktivitet) {
           TextButton(
             onPressed: () {
               Provider.of<ItemsProvider>(context, listen: false)
-                  .removeItem(index);
+                  .removeItem(item);
               Navigator.pop(context);
             },
             child: const Text('OK'),
@@ -137,4 +124,40 @@ Widget deleteButton(BuildContext context, index, String aktivitet) {
       ),
     ),
   );
+}
+
+class ListItem extends StatelessWidget {
+  final Items item;
+  BuildContext context;
+  ListItem(this.context, this.item);
+  @override
+  Widget build(BuildContext context) {
+    return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+      return Padding(
+          padding: const EdgeInsets.all(2),
+          child: CheckboxListTile(
+              value: item.checked,
+              title: Text(item.aktivitet),
+              secondary: deleteButton(context, item, item.aktivitet),
+              controlAffinity: ListTileControlAffinity.leading,
+              activeColor: Colors.green,
+              onChanged: (newvalue) {
+                setState(() {
+                  item.checked = newvalue!;
+                });
+              }));
+    });
+  }
+}
+
+List<Items>? _filterList(List<Items> list, filterBy) {
+  if (filterBy == 'alla') return list;
+  if (filterBy == 'markerad') {
+    return list.where((item) => item.checked == true).toList();
+  }
+  if (filterBy == 'inte markerad') {
+    return list.where((item) => item.checked == false).toList();
+  }
+  return null;
 }

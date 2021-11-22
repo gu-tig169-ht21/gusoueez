@@ -3,9 +3,12 @@ import 'package:my_first_app/models/items.dart';
 
 class ItemsProvider extends ChangeNotifier {
   final List<Items> _aktiviteter = [];
+  String _filterBy = 'all';
   List<Items> get getAktiviteter {
     return _aktiviteter;
   }
+
+  String get filterBy => _filterBy;
 
   void addItem(String aktivitet, bool checked) {
     Items item = Items(aktivitet, checked);
@@ -15,8 +18,8 @@ class ItemsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeItem(int index) {
-    _aktiviteter.removeAt(index);
+  void removeItem(Items item) {
+    _aktiviteter.remove(item);
 
     notifyListeners();
   }
@@ -26,5 +29,21 @@ class ItemsProvider extends ChangeNotifier {
       a.checked = check;
     }
     notifyListeners();
+  }
+
+  void setFilterBy(String filterBy) {
+    this._filterBy = filterBy;
+    notifyListeners();
+  }
+
+  bool checkAllMarked() {
+    bool value = false;
+    if (_aktiviteter.every((element) => element.checked == false)) {
+      value = false;
+    }
+    if (_aktiviteter.every((element) => element.checked == true)) {
+      value = true;
+    }
+    return value;
   }
 }
