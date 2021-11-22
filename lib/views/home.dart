@@ -97,7 +97,13 @@ class ItemList extends StatelessWidget with ChangeNotifier {
           padding: const EdgeInsets.all(2),
           child: CheckboxListTile(
               value: items.checked,
-              title: Text(items.aktivitet),
+              title: Text(
+                items.aktivitet,
+                style: (TextStyle(
+                    decoration:
+                        items.checked ? TextDecoration.lineThrough : null,
+                    decorationThickness: 2)),
+              ),
               secondary: deleteButton(context, index, items.aktivitet),
               controlAffinity: ListTileControlAffinity.leading,
               activeColor: Colors.green,
