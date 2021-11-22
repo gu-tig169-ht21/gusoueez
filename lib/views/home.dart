@@ -138,7 +138,13 @@ class ListItem extends StatelessWidget {
           padding: const EdgeInsets.all(2),
           child: CheckboxListTile(
               value: item.checked,
-              title: Text(item.aktivitet),
+              title: Text(
+                item.aktivitet,
+                style: (TextStyle(
+                    decoration:
+                        item.checked ? TextDecoration.lineThrough : null,
+                    decorationThickness: 2)),
+              ),
               secondary: deleteButton(context, item, item.aktivitet),
               controlAffinity: ListTileControlAffinity.leading,
               activeColor: Colors.green,
