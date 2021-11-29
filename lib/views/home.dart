@@ -13,23 +13,11 @@ class Home extends StatelessWidget {
         builder: (BuildContext context, StateSetter setState) {
       return Scaffold(
           appBar: AppBar(
-            leading: Builder(builder: (BuildContext context) {
-              return Checkbox(
-                  value: checkAll,
-                  activeColor: Colors.green,
-                  onChanged: (newValue) {
-                    setState(() {
-                      checkAll = newValue!;
-                      Provider.of<ItemsProvider>(context, listen: false)
-                          .updateAll(newValue);
-                    });
-                  });
-            }),
             title: const Text('Att göra'),
             centerTitle: true,
             actions: <Widget>[
               PopupMenuButton<String>(
-                onSelected: (value) {
+                onSelected: (value) async {
                   setState(() {
                     Provider.of<ItemsProvider>(context, listen: false)
                         .setFilterBy(value);
@@ -52,7 +40,7 @@ class Home extends StatelessWidget {
               return ListView(
                   scrollDirection: Axis.vertical,
                   shrinkWrap: true,
-                  children: _filterList(data.getAktiviteter, data.filterBy)!
+                  children: _filterList(data.list, data.filterBy)!
                       .map((card) => ListItem(context, card))
                       .toList());
             }),
@@ -68,7 +56,7 @@ class Home extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(8, 5, 8, 300),
                         child: TextFormField(
-                          onFieldSubmitted: (value) {
+                          onFieldSubmitted: (value) async {
                             Provider.of<ItemsProvider>(context, listen: false)
                                 .addItem(_controller.text, false);
                             Navigator.pop(context);
@@ -113,7 +101,7 @@ Widget deleteButton(BuildContext context, item, String aktivitet) {
             child: const Text('Avbryt'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Provider.of<ItemsProvider>(context, listen: false)
                   .removeItem(item);
               Navigator.pop(context);
@@ -137,33 +125,31 @@ class ListItem extends StatelessWidget {
       return Padding(
           padding: const EdgeInsets.all(2),
           child: CheckboxListTile(
-              value: item.checked,
+              value: item.done,
               title: Text(
-                item.aktivitet,
+                item.title,
                 style: (TextStyle(
-                    decoration:
-                        item.checked ? TextDecoration.lineThrough : null,
+                    decoration: item.done ? TextDecoration.lineThrough : null,
                     decorationThickness: 2)),
               ),
-              secondary: deleteButton(context, item, item.aktivitet),
+              secondary: deleteButton(context, item, item.title),
               controlAffinity: ListTileControlAffinity.leading,
               activeColor: Colors.green,
-              onChanged: (newvalue) {
-                setState(() {
-                  item.checked = newvalue!;
-                });
+              onChanged: (newvalue) async {
+                Provider.of<ItemsProvider>(context, listen: false)
+                    .updateItem(item, newvalue!);
               }));
     });
   }
 }
 
-List<Items>? _filterList(List<Items> list, filterBy) {
+List<Items>? _filterList(list, filterBy) {
   if (filterBy == 'alla') return list;
   if (filterBy == 'markerad') {
-    return list.where((item) => item.checked == true).toList();
+    return list.where((item) => item.done == true).toList();
   }
   if (filterBy == 'inte markerad') {
-    return list.where((item) => item.checked == false).toList();
+    return list.where((item) => item.done == false).toList();
   }
   return list;
 }
