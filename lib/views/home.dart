@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_first_app/models/items.dart';
 import 'package:my_first_app/models/items_provider.dart';
+import 'package:my_first_app/views/add_item.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatelessWidget {
-  final _controller = TextEditingController();
   bool checkAll = false;
   @override
   Widget build(BuildContext context) {
@@ -34,49 +34,24 @@ class Home extends StatelessWidget {
               )
             ],
           ),
-          body: SingleChildScrollView(
-            child: Consumer<ItemsProvider>(
-                builder: (context, ItemsProvider data, child) {
-              return ListView(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  children: _filterList(data.list, data.filterBy)!
-                      .map((card) => ListItem(context, card))
-                      .toList());
-            }),
-          ),
+          body: Consumer<ItemsProvider>(
+              builder: (context, ItemsProvider data, child) {
+            return ListView(
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                children: _filterList(data.list, data.filterBy)!
+                    .map((card) => ListItem(context, card))
+                    .toList());
+          }),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              _controller.clear();
-              showModalBottomSheet(
-                context: context,
-                builder: (context) {
-                  return Wrap(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 5, 8, 300),
-                        child: TextFormField(
-                          onFieldSubmitted: (value) async {
-                            Provider.of<ItemsProvider>(context, listen: false)
-                                .addItem(_controller.text, false);
-                            Navigator.pop(context);
-                          },
-                          decoration: InputDecoration(
-                            suffix: IconButton(
-                              onPressed: _controller.clear,
-                              icon: const Icon(Icons.clear),
-                            ),
-                            border: const UnderlineInputBorder(),
-                            hintText: "Lägg till aktivitet",
-                          ),
-                          controller: _controller,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              );
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddItem(),
+                  ));
             },
+
             tooltip: "Lägg till",
             child: const Icon(Icons.add),
             //backgroundColor: Colors.green,
